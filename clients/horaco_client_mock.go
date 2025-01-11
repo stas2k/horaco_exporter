@@ -8,6 +8,8 @@ import (
 
 func mockMainHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.URL.Path {
+	case "/login.cgi":
+		mockLoginHandler(w, r)
 	case "/port.cgi":
 		mockPortHandler(w, r)
 	case "/info.cgi":
@@ -16,6 +18,11 @@ func mockMainHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 		fmt.Fprintf(w, "not found")
 	}
+}
+
+func mockLoginHandler(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		return
 }
 
 func mockPortHandler(w http.ResponseWriter, r *http.Request) {

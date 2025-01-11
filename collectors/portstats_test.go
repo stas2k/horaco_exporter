@@ -1,32 +1,21 @@
-package clients
+package collectors
 
 import (
-	"net/http"
-	"net/http/httptest"
-	"reflect"
 	"testing"
+	"github.com/prometheus/client_golang/prometheus"
+
+	"github.com/stas2k/horaco_exporter/clients"
+	"github.com/stas2k/horaco_exporter/testutil"
 )
 
-func TestHoracoClient(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(mockMainHandler))
-	defer ts.Close()
+type mockStatsClient bool
 
-	tc := ts.Client()
-
-	scraper := NewHoracoClient(ts.URL, "admin", "admin")
-	scraper.h_client = tc
-
-	t.Run("GetPortStats", func(t *testing.T) {
-		out, err := scraper.GetPortStats()
-		if err != nil {
-			t.Error(err)
-		}
-		if !reflect.DeepEqual(out,
-			[]PortStats{
+func (c *mockStatsClient) GetPortStats() ([]clients.PortStats, error) {
+	return []clients.PortStats{
 				{
 					State:      true,
 					LinkStatus: true,
-					PktCount: PacketStats{
+					PktCount: clients.PacketStats{
 						TxGood: 1,
 						TxBad:  11,
 						RxGood: 111,
@@ -42,7 +31,7 @@ func TestHoracoClient(t *testing.T) {
 				{
 					State:      true,
 					LinkStatus: true,
-					PktCount: PacketStats{
+					PktCount: clients.PacketStats{
 						TxGood: 2,
 						TxBad:  22,
 						RxGood: 222,
@@ -59,7 +48,7 @@ func TestHoracoClient(t *testing.T) {
 				{
 					State:      false,
 					LinkStatus: true,
-					PktCount: PacketStats{
+					PktCount: clients.PacketStats{
 						TxGood: 3,
 						TxBad:  33,
 						RxGood: 333,
@@ -75,7 +64,7 @@ func TestHoracoClient(t *testing.T) {
 				{
 					State:      true,
 					LinkStatus: true,
-					PktCount: PacketStats{
+					PktCount: clients.PacketStats{
 						TxGood: 4,
 						TxBad:  44,
 						RxGood: 444,
@@ -91,7 +80,7 @@ func TestHoracoClient(t *testing.T) {
 				{
 					State:      true,
 					LinkStatus: true,
-					PktCount: PacketStats{
+					PktCount: clients.PacketStats{
 						TxGood: 5,
 						TxBad:  55,
 						RxGood: 555,
@@ -107,7 +96,7 @@ func TestHoracoClient(t *testing.T) {
 				{
 					State:      true,
 					LinkStatus: true,
-					PktCount: PacketStats{
+					PktCount: clients.PacketStats{
 						TxGood: 6,
 						TxBad:  66,
 						RxGood: 666,
@@ -123,7 +112,7 @@ func TestHoracoClient(t *testing.T) {
 				{
 					State:      true,
 					LinkStatus: false,
-					PktCount: PacketStats{
+					PktCount: clients.PacketStats{
 						TxGood: 7,
 						TxBad:  77,
 						RxGood: 777,
@@ -139,7 +128,7 @@ func TestHoracoClient(t *testing.T) {
 				{
 					State:      false,
 					LinkStatus: false,
-					PktCount: PacketStats{
+					PktCount: clients.PacketStats{
 						TxGood: 8,
 						TxBad:  88,
 						RxGood: 888,
@@ -155,7 +144,7 @@ func TestHoracoClient(t *testing.T) {
 				{
 					State:      true,
 					LinkStatus: true,
-					PktCount: PacketStats{
+					PktCount: clients.PacketStats{
 						TxGood: 9,
 						TxBad:  99,
 						RxGood: 999,
@@ -168,25 +157,43 @@ func TestHoracoClient(t *testing.T) {
 					FlowControlSet:       true,
 					FlowControlActual:    false,
 				},
-			}) {
-			t.Errorf("does not equal expected output")
-		}
-	})
+	}, nil
+}
 
-	t.Run("GetSystemInfo", func(t *testing.T) {
-		out, err := scraper.GetSystemInfo()
+func TestPortStatsCollector(t *testing.T) {
+	client := new(mockStatsClient)
+	stats_collector := NewPortStatsCollector("horaco_exporter", client)
+
+	registry := prometheus.NewRegistry()
+	registry.MustRegister(stats_collector)
+
+	t.Run("GetPortStats", func(t *testing.T) {
+		out, err := registry.Gather()
 		if err != nil {
-			t.Error(err)
+			t.Fatalf("Error gathering metrics: %v", err)
 		}
-		if !reflect.DeepEqual(out,  &SystemInfo{
-				Model:           "WAMJHJ-8125MNG",
-				MacAddress:      "1C:2A:12:34:56:78",
-				FirmwareVersion: "V1.9",
-				FirmwareDate:    "Jan 03 2024",
-				HardwareVersion: "V1.1",
+
+		ok := testutil.CompareMetrics(out, testutil.MetricTests{
+			"horaco_exporter_probe_success": {
+				Labels: testutil.LabelTests{
+					"probe": "port",
+				},
+				Value: 1.0,
 			},
-) {
-			t.Errorf("does not equal expected output")
+		})
+		if !ok {
+			t.Fatalf("Unexpected response from collector: %v", out)
+		}
+		ok = testutil.CompareMetrics(out, testutil.MetricTests{
+			"horaco_exporter_probe_success": {
+				Labels: testutil.LabelTests{
+					"probe": "info",
+				},
+				Value: 1.0,
+			},
+		})
+		if !ok {
+			t.Fatalf("Unexpected response from collector: %v", out)
 		}
 	})
 }

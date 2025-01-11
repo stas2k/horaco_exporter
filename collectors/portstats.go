@@ -1,24 +1,26 @@
 package collectors
 
 import (
-
 	"fmt"
 
 	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/stas2k/horaco_exporter/clients"
+	"log"
 )
 
-type PortMetric []prometheus.GaugeVec
+type PortClient interface {
+	GetPortStats() ([]clients.PortStats, error)
+}
 
 type PortStatsCollector struct {
 	namespace string
-	client     clients.HoracoClient
-	gauges []prometheus.GaugeVec
-	counters []prometheus.CounterVec
+	client    PortClient
+	gauges    []prometheus.GaugeVec
+	counters  []prometheus.CounterVec
 }
 
-func NewPortStatsCollector(namespace string, client clients.HoracoClient) *PortStatsCollector {
+func NewPortStatsCollector(namespace string, client PortClient) *PortStatsCollector {
 	return &PortStatsCollector{
 		client:    client,
 		namespace: namespace,
@@ -36,14 +38,15 @@ func (c *PortStatsCollector) Collect(ch chan<- prometheus.Metric) {
 	).With(prometheus.Labels{"probe": "port"})
 	stats, err := c.client.GetPortStats()
 	if err != nil {
-    success.Set(0.0)
-	  success.Collect(ch)
+		log.Println(err)
+		success.Set(0.0)
+		success.Collect(ch)
 		return
 	}
-  success.Set(1.0)
+	success.Set(1.0)
 	success.Collect(ch)
 
-	for i:=0; i<len(stats); i++ {
+	for i := 0; i < len(stats); i++ {
 		port_labels := []string{
 			"device",
 		}
@@ -60,9 +63,9 @@ func (c *PortStatsCollector) Collect(ch chan<- prometheus.Metric) {
 			port_labels,
 		)
 		if stat.State {
-		  m.With(prometheus.Labels{"device": port}).Set(1.0)
+			m.With(prometheus.Labels{"device": port}).Set(1.0)
 		} else {
-		  m.With(prometheus.Labels{"device": port}).Set(0.0)
+			m.With(prometheus.Labels{"device": port}).Set(0.0)
 		}
 		c.gauges = append(c.gauges, *m)
 
@@ -76,12 +79,12 @@ func (c *PortStatsCollector) Collect(ch chan<- prometheus.Metric) {
 			port_labels,
 		)
 		if stat.LinkStatus {
-		  m.With(prometheus.Labels{"device": port}).Set(1.0)
+			m.With(prometheus.Labels{"device": port}).Set(1.0)
 		} else {
-		  m.With(prometheus.Labels{"device": port}).Set(0.0)
+			m.With(prometheus.Labels{"device": port}).Set(0.0)
 		}
 		c.gauges = append(c.gauges, *m)
-		
+
 		m = prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Namespace: c.namespace,
@@ -116,9 +119,9 @@ func (c *PortStatsCollector) Collect(ch chan<- prometheus.Metric) {
 			port_labels,
 		)
 		if stat.LinkFullDuplexSet {
-		  m.With(prometheus.Labels{"device": port}).Set(1.0)
+			m.With(prometheus.Labels{"device": port}).Set(1.0)
 		} else {
-		  m.With(prometheus.Labels{"device": port}).Set(0.0)
+			m.With(prometheus.Labels{"device": port}).Set(0.0)
 		}
 		c.gauges = append(c.gauges, *m)
 
@@ -132,9 +135,9 @@ func (c *PortStatsCollector) Collect(ch chan<- prometheus.Metric) {
 			port_labels,
 		)
 		if stat.LinkFullDuplexActual {
-		  m.With(prometheus.Labels{"device": port}).Set(1.0)
+			m.With(prometheus.Labels{"device": port}).Set(1.0)
 		} else {
-		  m.With(prometheus.Labels{"device": port}).Set(0.0)
+			m.With(prometheus.Labels{"device": port}).Set(0.0)
 		}
 		c.gauges = append(c.gauges, *m)
 
@@ -148,9 +151,9 @@ func (c *PortStatsCollector) Collect(ch chan<- prometheus.Metric) {
 			port_labels,
 		)
 		if stat.FlowControlSet {
-		  m.With(prometheus.Labels{"device": port}).Set(1.0)
+			m.With(prometheus.Labels{"device": port}).Set(1.0)
 		} else {
-		  m.With(prometheus.Labels{"device": port}).Set(0.0)
+			m.With(prometheus.Labels{"device": port}).Set(0.0)
 		}
 		c.gauges = append(c.gauges, *m)
 
@@ -164,9 +167,9 @@ func (c *PortStatsCollector) Collect(ch chan<- prometheus.Metric) {
 			port_labels,
 		)
 		if stat.FlowControlActual {
-		  m.With(prometheus.Labels{"device": port}).Set(1.0)
+			m.With(prometheus.Labels{"device": port}).Set(1.0)
 		} else {
-		  m.With(prometheus.Labels{"device": port}).Set(0.0)
+			m.With(prometheus.Labels{"device": port}).Set(0.0)
 		}
 		c.gauges = append(c.gauges, *m)
 
@@ -194,7 +197,6 @@ func (c *PortStatsCollector) Collect(ch chan<- prometheus.Metric) {
 		cnt.With(prometheus.Labels{"device": port}).Add(float64(stat.PktCount.TxBad))
 		c.counters = append(c.counters, *cnt)
 
-
 		cnt = prometheus.NewCounterVec(
 			prometheus.CounterOpts{
 				Namespace: c.namespace,
@@ -221,19 +223,19 @@ func (c *PortStatsCollector) Collect(ch chan<- prometheus.Metric) {
 
 	}
 
-	for i:=0; i<len(c.gauges); i++ {
+	for i := 0; i < len(c.gauges); i++ {
 		c.gauges[i].Collect(ch)
 	}
-	for i:=0; i<len(c.counters); i++ {
+	for i := 0; i < len(c.counters); i++ {
 		c.counters[i].Collect(ch)
 	}
 }
 func (c *PortStatsCollector) Describe(ch chan<- *prometheus.Desc) {
 
-	for i:=0; i<len(c.gauges); i++ {
+	for i := 0; i < len(c.gauges); i++ {
 		c.gauges[i].Describe(ch)
 	}
-	for i:=0; i<len(c.counters); i++ {
+	for i := 0; i < len(c.counters); i++ {
 		c.counters[i].Describe(ch)
 	}
 }

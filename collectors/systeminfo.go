@@ -5,13 +5,17 @@ import (
 	"github.com/stas2k/horaco_exporter/clients"
 )
 
+type InfoClient interface {
+	GetSystemInfo() (*clients.SystemInfo, error)
+}
+
 type SystemInfoCollector struct {
-	namespace string
-	client     clients.HoracoClient
+	namespace  string
+	client     InfoClient
 	infoMetric *prometheus.GaugeVec
 }
 
-func NewSystemInfoCollector(namespace string, client clients.HoracoClient) *SystemInfoCollector {
+func NewSystemInfoCollector(namespace string, client InfoClient) *SystemInfoCollector {
 	return &SystemInfoCollector{
 		namespace: namespace,
 		client:    client,
@@ -45,11 +49,11 @@ func (c *SystemInfoCollector) Collect(ch chan<- prometheus.Metric) {
 
 	info, err := c.client.GetSystemInfo()
 	if err != nil {
-    success.Set(0.0)
-	  success.Collect(ch)
+		success.Set(0.0)
+		success.Collect(ch)
 		return
 	}
-  success.Set(1.0)
+	success.Set(1.0)
 	success.Collect(ch)
 
 	labels := prometheus.Labels{
@@ -64,6 +68,5 @@ func (c *SystemInfoCollector) Collect(ch chan<- prometheus.Metric) {
 	c.infoMetric.Collect(ch)
 }
 func (c *SystemInfoCollector) Describe(ch chan<- *prometheus.Desc) {
-
 	c.infoMetric.Describe(ch)
 }

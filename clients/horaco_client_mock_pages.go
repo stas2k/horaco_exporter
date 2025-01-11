@@ -301,7 +301,7 @@ const PORT_RES string = `<html>
     <td>Port 9</td>
     <td>Enable</td>
     <td>10G Full</td>
-    <td>10G Full</td>
+    <td>10GFull</td>
     <td>On</td>
     <td>Off</td>
   </tr>

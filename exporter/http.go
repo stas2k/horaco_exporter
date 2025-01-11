@@ -1,7 +1,6 @@
 package exporter
 
 import (
-	"encoding/hex"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors/version"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -36,19 +35,20 @@ func (e *HoracoExporter) serveMetrics(w http.ResponseWriter, r *http.Request) {
 		target = "http://" + target
 	}
 
-	if r.URL.Query().Get("hash") == "" {
-		http.Error(w, "'hash' parameter must be specified", http.StatusBadRequest)
+	user := r.URL.Query().Get("user")
+	if user == "" {
+		http.Error(w, "'user' parameter must be specified", http.StatusBadRequest)
 		return
 	}
-	hash, err := hex.DecodeString(r.URL.Query().Get("hash"))
-	if err != nil {
-		http.Error(w, "'hash' parameter must be a 16 byte hex value", http.StatusBadRequest)
+	password := r.URL.Query().Get("password")
+	if password == "" {
+		http.Error(w, "'password' parameter must be specified", http.StatusBadRequest)
 		return
 	}
 
-	client := clients.NewHoracoClient(target, ([16]byte)(hash))
-	info_collector := collectors.NewSystemInfoCollector("horaco_exporter", *client)
-	port_collector := collectors.NewPortStatsCollector("horaco_exporter", *client)
+	client := clients.NewHoracoClient(target, user, password)
+	info_collector := collectors.NewSystemInfoCollector("horaco_exporter", client)
+	port_collector := collectors.NewPortStatsCollector("horaco_exporter", client)
 
 	registry := prometheus.NewRegistry()
 	registry.MustRegister(version.NewCollector("horaco_exporter"))
@@ -67,9 +67,11 @@ func (e *HoracoExporter) serveIndex(w http.ResponseWriter, r *http.Request) {
 <h1>Horaco Exporter</h1>
  <form action='/metrics'>
   <label for="target">Target:</label>
-	<input type="text" id="target" name="target" value="http://192.168.2.1"><br>
-  <label for="hash">hash:</label>
-	<input type="text" id="hash" name="hash" value="f6fdffe48c908deb0f4c3bd36c032e72"><br>
+	<input type="text" id="target" name="target" value="http://192.168.130.2"><br>
+  <label for="user">User name:</label>
+	<input type="text" id="user" name="user" value="admin"><br>
+  <label for="user">Password:</label>
+	<input type="text" id="password" name="password" value="admin"><br>
 	<input type="submit" value="OK">
 </form>
 </body>

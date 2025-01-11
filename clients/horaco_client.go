@@ -1,25 +1,27 @@
 package clients
 
 import (
-	"time"
 	"bufio"
 	"encoding/hex"
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
+	"crypto/md5"
 )
 
-type packetStats struct {
+type PacketStats struct {
 	TxGood, TxBad, RxGood, RxBad int
 }
-type portStats struct {
+type PortStats struct {
 	// from monitoring page
 	State      bool
 	LinkStatus bool
-	PktCount   packetStats
+	PktCount   PacketStats
 	// from config page
 	LinkSpeedSet    int
 	LinkSpeedActual int
@@ -32,7 +34,7 @@ type portStats struct {
 }
 
 // node_openwrt_info{board_name="xiaomi,mi-router-3g", id="OpenWrt", model="Xiaomi Mi Router 3G", release="23.05.3", revision="r23809-234f1a2efa", system="MediaTek MT7621 ver:1 eco:3", target="ramips/mt7621"}
-type systemInfo struct {
+type SystemInfo struct {
 	Model           string
 	MacAddress      string
 	FirmwareVersion string
@@ -42,6 +44,7 @@ type systemInfo struct {
 
 type HoracoClient struct {
 	header   *http.Header
+	login_post_data   string
 	line_reg *regexp.Regexp
 	h_client *http.Client
 	base_url string
@@ -50,6 +53,7 @@ type HoracoClient struct {
 const PORT_URL = "/port.cgi"
 const STATS_URL = PORT_URL + "?page=stats"
 const INFO_URL = "/info.cgi"
+const LOGIN_URL = "/login.cgi"
 
 func (client *HoracoClient) parseField(s *bufio.Scanner) (string, error) {
 	s.Scan()
@@ -72,10 +76,33 @@ func (client *HoracoClient) parseFieldNum(s *bufio.Scanner) (int, error) {
 	return cnt, nil
 }
 
-func (client *HoracoClient) getURL(p string) (*http.Response, error) {
-	url := fmt.Sprintf(client.base_url + p)
+func (client *HoracoClient) loginRequest() error {
+	url := fmt.Sprintf(client.base_url + LOGIN_URL)
+	req, err := http.NewRequest(http.MethodPost, url, strings.NewReader(client.login_post_data))
+	if err != nil {
+		return err
+	}
+	req.Header.Add("Cookie", client.header.Get("Cookie"))
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
-	req, err := http.NewRequest("GET", url, nil)
+	res, err := client.h_client.Do(req)
+	if (err != nil) {
+		return err
+	}
+	if (res.StatusCode != 200) {
+		return fmt.Errorf("Unexpected HTTP response: %s", res.Status)
+	}
+	return nil
+}
+
+func (client *HoracoClient) getURL(p string) (*http.Response, error) {
+	err := client.loginRequest()
+	if err != nil {
+		return nil, err
+	}
+
+	url := fmt.Sprintf(client.base_url + p)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +117,7 @@ func (client *HoracoClient) getURL(p string) (*http.Response, error) {
 	return res, nil
 }
 
-func (client *HoracoClient) GetSystemInfo() (*systemInfo, error) {
+func (client *HoracoClient) GetSystemInfo() (*SystemInfo, error) {
 	info_resp, err := client.getURL(INFO_URL)
 	if err != nil {
 		return nil, fmt.Errorf("error getting INFO_URL: %w", err)
@@ -107,7 +134,7 @@ func (client *HoracoClient) GetSystemInfo() (*systemInfo, error) {
 		return nil, err
 	}
 
-	var info systemInfo
+	var info SystemInfo
 
 	info_scan.Scan()
 	line := info_scan.Text()
@@ -178,7 +205,7 @@ func (client *HoracoClient) GetSystemInfo() (*systemInfo, error) {
 	return &info, nil
 }
 
-func (client *HoracoClient) GetPortStats() ([]portStats, error) {
+func (client *HoracoClient) GetPortStats() ([]PortStats, error) {
 
 	stat_resp, err := client.getURL(STATS_URL)
 	if err != nil {
@@ -195,7 +222,7 @@ func (client *HoracoClient) GetPortStats() ([]portStats, error) {
 	}
 
 	// Get Port Stats
-	ports := make([]portStats, 9)
+	ports := make([]PortStats, 9)
 
 	for i := 0; i < len(ports); i++ {
 		stat_scan.Scan()
@@ -350,7 +377,7 @@ func (client *HoracoClient) GetPortStats() ([]portStats, error) {
 		case "Link Down":
 			ps.LinkSpeedActual = 0
 			ps.LinkFullDuplexActual = false
-		case "10G Full":
+		case "10GFull":
 			ps.LinkSpeedActual = 10000
 			ps.LinkFullDuplexActual = true
 		case "2500Full":
@@ -407,13 +434,23 @@ func (client *HoracoClient) GetPortStats() ([]portStats, error) {
 	return ports, nil
 }
 
-func NewHoracoClient(base_url string, hash [16]byte) *HoracoClient {
+func NewHoracoClient(base_url string, user string, password string) *HoracoClient {
+	hash_out := md5.Sum([]byte(user+password))
+	hash := hex.EncodeToString(hash_out[:])
+
+	values := &url.Values{}
+	values.Set("Response", hash)
+	values.Set("username", user)
+	values.Set("password", password)
+	values.Set("language", "EN")
+
 	return &HoracoClient{
 		base_url: base_url,
 		line_reg: regexp.MustCompile(`\s+<td(?: [^>]+)?>([^<+]+)</td>`),
 		header: &http.Header{
-			"Cookie": {"admin=" + hex.EncodeToString(hash[:])},
+			"Cookie": {"admin=" + hash},
 		},
-		h_client: &http.Client{Timeout: 3 * time.Second},
+		login_post_data: values.Encode(),
+		h_client: &http.Client{Timeout: 10 * time.Second},
 	}
 }
