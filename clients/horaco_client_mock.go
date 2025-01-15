@@ -21,8 +21,8 @@ func mockMainHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func mockLoginHandler(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		return
+	w.WriteHeader(http.StatusOK)
+	return
 }
 
 func mockPortHandler(w http.ResponseWriter, r *http.Request) {

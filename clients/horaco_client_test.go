@@ -178,14 +178,14 @@ func TestHoracoClient(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		if !reflect.DeepEqual(out,  &SystemInfo{
-				Model:           "WAMJHJ-8125MNG",
-				MacAddress:      "1C:2A:12:34:56:78",
-				FirmwareVersion: "V1.9",
-				FirmwareDate:    "Jan 03 2024",
-				HardwareVersion: "V1.1",
-			},
-) {
+		if !reflect.DeepEqual(out, &SystemInfo{
+			Model:           "WAMJHJ-8125MNG",
+			MacAddress:      "1C:2A:12:34:56:78",
+			FirmwareVersion: "V1.9",
+			FirmwareDate:    "Jan 03 2024",
+			HardwareVersion: "V1.1",
+		},
+		) {
 			t.Errorf("does not equal expected output")
 		}
 	})

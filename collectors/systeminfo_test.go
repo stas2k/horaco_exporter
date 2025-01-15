@@ -1,8 +1,8 @@
 package collectors
 
 import (
-	"testing"
 	"github.com/prometheus/client_golang/prometheus"
+	"testing"
 
 	"github.com/stas2k/horaco_exporter/clients"
 	"github.com/stas2k/horaco_exporter/testutil"

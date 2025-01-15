@@ -2,6 +2,7 @@ package clients
 
 import (
 	"bufio"
+	"crypto/md5"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -11,7 +12,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"crypto/md5"
 )
 
 type PacketStats struct {
@@ -33,7 +33,6 @@ type PortStats struct {
 	FlowControlActual bool
 }
 
-// node_openwrt_info{board_name="xiaomi,mi-router-3g", id="OpenWrt", model="Xiaomi Mi Router 3G", release="23.05.3", revision="r23809-234f1a2efa", system="MediaTek MT7621 ver:1 eco:3", target="ramips/mt7621"}
 type SystemInfo struct {
 	Model           string
 	MacAddress      string
@@ -43,11 +42,11 @@ type SystemInfo struct {
 }
 
 type HoracoClient struct {
-	header   *http.Header
-	login_post_data   string
-	line_reg *regexp.Regexp
-	h_client *http.Client
-	base_url string
+	header          *http.Header
+	login_post_data string
+	line_reg        *regexp.Regexp
+	h_client        *http.Client
+	base_url        string
 }
 
 const PORT_URL = "/port.cgi"
@@ -86,10 +85,10 @@ func (client *HoracoClient) loginRequest() error {
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
 	res, err := client.h_client.Do(req)
-	if (err != nil) {
+	if err != nil {
 		return err
 	}
-	if (res.StatusCode != 200) {
+	if res.StatusCode != 200 {
 		return fmt.Errorf("Unexpected HTTP response: %s", res.Status)
 	}
 	return nil
@@ -285,23 +284,6 @@ func (client *HoracoClient) GetPortStats() ([]PortStats, error) {
 
 	stat_resp.Body.Close()
 
-	//////////////////////////////////////////
-	/*
-	   Config:
-	   2.5G Full
-	   1000Full
-	   100 Full
-	   100 Half
-	   10 Full
-	   10 Half
-	   10G Full
-	   Actual:
-	   1000
-	   2500
-	   5000
-	   Half
-	   Full
-	*/
 	port_resp, err := client.getURL(PORT_URL)
 	if err != nil {
 		return nil, fmt.Errorf("error getting PORT_URL: %w", err)
@@ -435,7 +417,7 @@ func (client *HoracoClient) GetPortStats() ([]PortStats, error) {
 }
 
 func NewHoracoClient(base_url string, user string, password string) *HoracoClient {
-	hash_out := md5.Sum([]byte(user+password))
+	hash_out := md5.Sum([]byte(user + password))
 	hash := hex.EncodeToString(hash_out[:])
 
 	values := &url.Values{}
@@ -451,6 +433,6 @@ func NewHoracoClient(base_url string, user string, password string) *HoracoClien
 			"Cookie": {"admin=" + hash},
 		},
 		login_post_data: values.Encode(),
-		h_client: &http.Client{Timeout: 10 * time.Second},
+		h_client:        &http.Client{Timeout: 10 * time.Second},
 	}
 }

@@ -11,9 +11,22 @@ import (
 
 func main() {
 	var port = flag.Int("port", 8088, "port to listen for Prometheus scrapes on")
+	var hosts = flag.String("hosts", "", "space delimited file containing target credentials")
 	flag.Parse()
 
-	e := exporter.HoracoExporter(true)
+	auth := &exporter.AuthEndpoints{}
+	var err error
+	if *hosts != "" {
+		auth, err = exporter.ParseAuthFile(*hosts)
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		log.Println("WARNING! Running in insecure mode!")
+		log.Println("Please use the -hosts option to limit the hosts reachable by this exporter")
+	}
+
+	e := exporter.HoracoExporter(*auth)
 	http.Handle("/", e)
 
 	log.Printf("Beginning to serve on port :" + strconv.Itoa(*port))
