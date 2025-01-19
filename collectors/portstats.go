@@ -2,11 +2,10 @@ package collectors
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/prometheus/client_golang/prometheus"
-
 	"github.com/stas2k/horaco_exporter/clients"
-	"log"
 )
 
 type PortClient interface {
@@ -38,7 +37,7 @@ func (c *PortStatsCollector) Collect(ch chan<- prometheus.Metric) {
 	).With(prometheus.Labels{"probe": "port"})
 	stats, err := c.client.GetPortStats()
 	if err != nil {
-		log.Println(err)
+		log.Printf("Error collecting port metrics: %s", err)
 		success.Set(0.0)
 		success.Collect(ch)
 		return

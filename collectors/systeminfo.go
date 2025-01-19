@@ -1,6 +1,8 @@
 package collectors
 
 import (
+	"log"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stas2k/horaco_exporter/clients"
 )
@@ -49,6 +51,7 @@ func (c *SystemInfoCollector) Collect(ch chan<- prometheus.Metric) {
 
 	info, err := c.client.GetSystemInfo()
 	if err != nil {
+		log.Printf("Error collecting system info metrics: %s", err)
 		success.Set(0.0)
 		success.Collect(ch)
 		return

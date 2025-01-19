@@ -22,10 +22,10 @@ func ParseAuthFile(path string) (*AuthEndpoints, error) {
 		return nil, err
 	}
 
-	line_n := 0
 	lines := bufio.NewScanner(auth_f)
 	lines.Split(bufio.ScanLines)
 
+	line_n := 0
 	for lines.Scan() {
 		line_n++
 
@@ -34,7 +34,6 @@ func ParseAuthFile(path string) (*AuthEndpoints, error) {
 		_, err := url.ParseRequestURI(f[0])
 		if err != nil {
 			return nil, fmt.Errorf("error parsing URL \"%s\" at %s:%d: %w", f[0], path, line_n, err)
-
 		}
 
 		endpoints[f[0]] = AuthEndpoint{

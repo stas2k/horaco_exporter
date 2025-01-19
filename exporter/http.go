@@ -64,7 +64,6 @@ func (e HoracoExporter) serveMetrics(w http.ResponseWriter, r *http.Request) {
 	promhttp.HandlerFor(
 		registry,
 		promhttp.HandlerOpts{}).ServeHTTP(w, r)
-
 }
 
 func (e *HoracoExporter) serveIndex(w http.ResponseWriter, r *http.Request) {
