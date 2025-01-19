@@ -10,7 +10,7 @@ The following models are known to work:
 
 ## Install
 
-Horaco_exporter is a Go application, which can be built by the user, or downloaded from Releases page on girhub.
+Horaco_exporter is a Go application, which can be built by the user, or downloaded from Releases page on github.
 
 ## Run
 
@@ -27,7 +27,7 @@ Curl can be used to test as follows:
 $ curl -G \
   -d user=admin \
   -d password=admin \
-  -d target=http://192.168.2.1\
+  -d target=http://192.168.2.1 \
   http://localhost:8088/metrics
 ```
 
@@ -50,7 +50,7 @@ Curl can be used to test as follows:
 
 ```shell
 $ curl -G \
-  -d target=http://192.168.2.1\
+  -d target=http://192.168.2.1 \
   http://localhost:8088/metrics
 ```
 
