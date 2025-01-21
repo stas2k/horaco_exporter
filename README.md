@@ -10,7 +10,7 @@ The following models are known to work:
 
 ## Install
 
-Horaco_exporter is a Go application, which can be built by the user, or downloaded from Releases page on github.
+Horaco_exporter is a Go application, which can be built by the user, or downloaded from Releases page on Github.
 
 ## Run
 
@@ -31,9 +31,9 @@ $ curl -G \
   http://localhost:8088/metrics
 ```
 
-However, the default mode is insecure, as Prometheus needs to present switche's admin user credentials. You can store credentials on the exporter's side, and use them as endpoint allowlist.
+However, the default mode is insecure, as Prometheus needs to present switch's admin user credentials. You can store credentials on the exporter's side, and use them as endpoint allowlist.
 
-Fill in a `auth` file as follows for switches' defualt credentials:
+Fill in a `auth` file as follows for switches' default credentials:
 
 ```
 http://192.168.2.1 admin admin
@@ -56,7 +56,7 @@ $ curl -G \
 
 ## Scraping with Prometheus
 
-The exporter is scraped in a simmilar manner to a blackbox_exporter.
+The exporter is scraped in a similar manner to a blackbox_exporter.
 
 The following configuration is a good starting point for allowlist mode:
 
@@ -80,6 +80,7 @@ The following configuration is a good starting point for allowlist mode:
     - http://192.168.2.1
 ```
 
+You can find a minimal Grafana dashboard JSON at `contrib/horaco_exporter-grafana.json`. Ports can be renamed in the Port Status panel by modifying the `Organize fields by name` transformation.
 
 ## Metrics sample
 
