@@ -1,6 +1,6 @@
 module github.com/stas2k/horaco_exporter
 
-go 1.22.3
+go 1.23.5
 
 require github.com/prometheus/client_golang v1.19.1
 
