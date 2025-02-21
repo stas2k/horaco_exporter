@@ -368,16 +368,16 @@ func (client *HoracoClient) GetPortStats() ([]PortStats, error) {
 		case "1000Full":
 			ps.LinkSpeedActual = 1000
 			ps.LinkFullDuplexActual = true
-		case "100 Full":
+		case "100Full":
 			ps.LinkSpeedActual = 100
 			ps.LinkFullDuplexActual = true
-		case "100 Half":
+		case "100Half":
 			ps.LinkSpeedActual = 100
 			ps.LinkFullDuplexActual = false
-		case "10 Full":
+		case "10Full":
 			ps.LinkSpeedActual = 10
 			ps.LinkFullDuplexActual = true
-		case "10 Half":
+		case "10Half":
 			ps.LinkSpeedActual = 10
 			ps.LinkFullDuplexActual = false
 		default:
