@@ -245,7 +245,7 @@ const PORT_RES string = `<html>
     <td>Port 2</td>
     <td>Enable</td>
     <td>100 Full</td>
-    <td>100 Full</td>
+    <td>100Full</td>
     <td>On</td>
     <td>On</td>
   </tr>
@@ -253,7 +253,7 @@ const PORT_RES string = `<html>
     <td>Port 3</td>
     <td>Enable</td>
     <td>100 Half</td>
-    <td>100 Half</td>
+    <td>100Half</td>
     <td>On</td>
     <td>Off</td>
   </tr>
@@ -261,7 +261,7 @@ const PORT_RES string = `<html>
     <td>Port 4</td>
     <td>Enable</td>
     <td>10 Full</td>
-    <td>10 Full</td>
+    <td>10Full</td>
     <td>Off</td>
     <td>Off</td>
   </tr>
@@ -269,7 +269,7 @@ const PORT_RES string = `<html>
     <td>Port 5</td>
     <td>Enable</td>
     <td>10 Half</td>
-    <td>10 Half</td>
+    <td>10Half</td>
     <td>Off</td>
     <td>Off</td>
   </tr>
