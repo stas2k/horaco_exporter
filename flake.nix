@@ -28,7 +28,7 @@
           nativeBuildInputs = with pkgs; [
             go
             writableTmpDirAsHomeHook
-            pkgs.apple_sdk_11_0
+            (lib.optional stdenv.hostPlatform.isDarwin pkgs.apple_sdk_11_0)
           ];
           checkPhase = ''
             go test -v ./...

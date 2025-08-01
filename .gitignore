@@ -30,3 +30,4 @@ go.work.sum
 /gomod2nix-template
 
 /result
+.direnv/
