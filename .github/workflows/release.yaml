@@ -23,11 +23,11 @@ jobs:
           - goarch: arm64
             goos: windows
     steps:
-    - uses: actions/checkout@v4
-    - uses: wangyoucao577/go-release-action@481a2c1a0f1be199722e3e9b74d7199acafc30a8 #v1.53
+    - uses: actions/checkout@v7
+    - uses: wangyoucao577/go-release-action@279495102627de7960cbc33434ab01a12bae144b #v1.55
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         goos: ${{ matrix.goos }}
         goarch: ${{ matrix.goarch }}
-        goversion: "1.23"
+        goversion: "1.26"
         extra_files: LICENSE README.md hosts.example
