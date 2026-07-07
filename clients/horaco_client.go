@@ -76,7 +76,7 @@ func (client *HoracoClient) parseFieldNum(s *bufio.Scanner) (int, error) {
 }
 
 func (client *HoracoClient) loginRequest() error {
-	url := fmt.Sprintf(client.base_url + LOGIN_URL)
+	url := fmt.Sprintf("%s", client.base_url+LOGIN_URL)
 	req, err := http.NewRequest(http.MethodPost, url, strings.NewReader(client.login_post_data))
 	if err != nil {
 		return err
@@ -100,7 +100,7 @@ func (client *HoracoClient) getURL(p string) (*http.Response, error) {
 		return nil, err
 	}
 
-	url := fmt.Sprintf(client.base_url + p)
+	url := fmt.Sprintf("%s", client.base_url+p)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
