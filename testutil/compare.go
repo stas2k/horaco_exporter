@@ -2,7 +2,6 @@ package testutil
 
 import (
 	prom_pb "github.com/prometheus/client_model/go"
-	//"github.com/davecgh/go-spew/spew"
 )
 
 type LabelTests map[string]string
