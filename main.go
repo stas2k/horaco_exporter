@@ -29,6 +29,6 @@ func main() {
 	e := exporter.HoracoExporter(*auth)
 	http.Handle("/", e)
 
-	log.Printf("Beginning to serve on port :" + strconv.Itoa(*port))
+	log.Printf("Beginning to serve on port: %d", *port)
 	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), nil))
 }

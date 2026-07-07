@@ -1,7 +1,7 @@
 {
   description = "A Prometheus exporter for cheap 2.5G switches";
 
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
   inputs.flake-utils.url = "github:numtide/flake-utils";
   inputs.gomod2nix.url = "github:nix-community/gomod2nix";
   inputs.gomod2nix.inputs.nixpkgs.follows = "nixpkgs";
@@ -28,7 +28,7 @@
           nativeBuildInputs = with pkgs; [
             go
             writableTmpDirAsHomeHook
-            (lib.optional stdenv.hostPlatform.isDarwin pkgs.apple_sdk_11_0)
+            (lib.optional stdenv.hostPlatform.isDarwin pkgs.apple_sdk_15_0)
           ];
           checkPhase = ''
             go test -v ./...
