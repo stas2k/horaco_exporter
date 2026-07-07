@@ -31,3 +31,4 @@ jobs:
         goarch: ${{ matrix.goarch }}
         goversion: "1.26"
         extra_files: LICENSE README.md hosts.example
+        md5sum: false
